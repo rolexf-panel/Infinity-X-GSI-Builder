@@ -1,0 +1,39 @@
+name: Build Infinity X
+
+on:
+  # Menjalankan workflow setiap ada push ke branch main
+  push:
+    branches: [ "main" ]
+  # Memungkinkan kamu menjalankan workflow secara manual dari tab Actions
+  workflow_dispatch:
+
+jobs:
+  execute-script:
+    runs-on: ubuntu-22.04
+
+    steps:
+      # 1. Checkout kode dari repo agar runner bisa mengakses file script.sh
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      # 2. Membersihkan runner github
+      - name: Cleaning disk space
+        uses: rokibhasansagar/slimhub_actions@v25.42.5
+        
+      # 3. Memberikan izin eksekusi dan menjalankan script
+      - name: Run script.sh
+        run: |
+          chmod +x ./script.sh
+          ./script.sh
+          
+      # 4. Menampilkan summary
+            - name: Tampilkan Summary di Dashboard
+        if: always() # Tetap tampilkan meskipun build gagal (untuk cek log)
+        run: |
+          echo "## 📊 Hasil Build GSI" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Detail | Info |" >> $GITHUB_STEP_SUMMARY
+          echo "| :--- | :--- |" >> $GITHUB_STEP_SUMMARY
+          echo "| 📦 Status | ✅ Sukses |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🔗 Link Download | [Klik Disini](${{ steps.build_step.outputs.gofile_link }}) |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🕒 Waktu Build | $(date +'%Y-%m-%d %H:%M') |" >> $GITHUB_STEP_SUMMARY
