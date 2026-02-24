@@ -36,7 +36,7 @@ setup() {
         
     # Install semua paket (Perbaikan: 'Info' jadi 'info')
     info "Installing all required package.."
-    sudo apt install -y bc bison build-essential curl flex g++-multilib gcc-multilib git gnupg gperf libxml2 lib32z1-dev liblz4-tool libncurses5-dev libsdl1.2-dev libwxgtk3.2-dev imagemagick lunzip lzop array-info schedtool squashfs-tools xsltproc zip zlib1g-dev openjdk-11-jdk-headless python3 python-is-python3 python3-venv perl xmlstarlet virtualenv xz-utils rr jq libncurses5 pngcrush lib32ncurses5-dev git-lfs
+    sudo apt install -y bc bison build-essential curl flex g++-multilib gcc-multilib git gnupg gperf libxml2 lib32z1-dev liblz4-tool libncurses5-dev libsdl1.2-dev libwxgtk3.2-dev imagemagick ccache lunzip lzop array-info schedtool squashfs-tools xsltproc zip zlib1g-dev openjdk-11-jdk-headless python3 python-is-python3 python3-venv perl xmlstarlet virtualenv xz-utils rr jq libncurses5 pngcrush lib32ncurses5-dev git-lfs
 
     # Download & setup platform-tools
     cd ~
