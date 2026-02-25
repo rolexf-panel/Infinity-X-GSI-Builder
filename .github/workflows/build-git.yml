@@ -1,0 +1,68 @@
+name: Build and Release Git for Android
+
+on:
+  workflow_dispatch: # Menjalankan secara manual
+
+permissions:
+  contents: write # Wajib agar bisa upload ke Release page
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Build Dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y wget unzip jq zip
+
+      - name: Run Build Script
+        id: builder
+        run: |
+          chmod +x ./build_git_android.sh
+          ./build_git_android.sh
+          
+          # Mencari lokasi binary git yang baru di-compile
+          # (Asumsi: script kamu menghasilkan file di folder 'output')
+          zip -r git-android-aarch64.zip ./git_android_build/git-2.43.0/git
+          
+          echo "artifact_path=git-android-aarch64.zip" >> $GITHUB_OUTPUT
+
+      - name: Upload to GoFile (Mirror)
+        id: mirror
+        run: |
+          SERVER=$(curl -s https://api.gofile.io/servers | jq -r '.data.servers[0].name')
+          RESPONSE=$(curl -F "file=@${{ steps.builder.outputs.artifact_path }}" "https://${SERVER}.gofile.io/contents/uploadfile")
+          MIRROR_LINK=$(echo $RESPONSE | jq -r '.data.downloadPage')
+          
+          echo "gofile_url=$MIRROR_LINK" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: git-android-${{ github.run_number }}
+          name: Git for Android (AArch64) - Build #${{ github.run_number }}
+          body: |
+            ## 🛠 Build Info
+            - **Architecture:** ARM64 (AArch64)
+            - **Git Version:** 2.43.0
+            - **API Level:** 29 (Android 10+)
+            
+            ## 🔗 Mirrors
+            - **Primary (GitHub):** Attached below
+            - **Mirror (GoFile):** [Download Here](${{ steps.mirror.outputs.gofile_url }})
+          files: ${{ steps.builder.outputs.artifact_path }}
+          draft: false
+          prerelease: false
+
+      - name: Post Summary
+        run: |
+          echo "## ✅ Build Successfully Released!" >> $GITHUB_STEP_SUMMARY
+          echo "| Resource | Link |" >> $GITHUB_STEP_SUMMARY
+          echo "| :--- | :--- |" >> $GITHUB_STEP_SUMMARY
+          echo "| 📦 GitHub Release | [View Release](${{ github.server_url }}/${{ github.repository }}/releases/tag/git-android-${{ github.run_number }}) |" >> $GITHUB_STEP_SUMMARY
+          echo "| 📂 Mirror Link | [GoFile Link](${{ steps.mirror.outputs.gofile_url }}) |" >> $GITHUB_STEP_SUMMARY
